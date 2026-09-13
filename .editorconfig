@@ -1,0 +1,16 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+# One limit for both linters, so a line neither of them likes is never a
+# line the other waves through.
+max_line_length = 120
+
+[*.{xml,yml,yaml}]
+indent_size = 4

@@ -1,0 +1,620 @@
+cases:
+  - name: a callout of each kind is recognised by its marker
+    markdown: |
+      > [!NOTE]
+      > Read this first.
+    found:
+      - kind: callout
+        class: note
+        text: Read this first.
+
+  - name: a tip carries its own class
+    markdown: |
+      > [!TIP]
+      > Try the shorter form.
+    found:
+      - kind: callout
+        class: tip
+        text: Try the shorter form.
+
+  - name: an important callout carries its own class
+    markdown: |
+      > [!IMPORTANT]
+      > The wiki is the source.
+    found:
+      - kind: callout
+        class: important
+        text: The wiki is the source.
+
+  - name: a warning carries its own class
+    markdown: |
+      > [!WARNING]
+      > This cannot be undone.
+    found:
+      - kind: callout
+        class: warning
+        text: This cannot be undone.
+
+  - name: a caution carries its own class
+    markdown: |
+      > [!CAUTION]
+      > The key is public once it ships.
+    found:
+      - kind: callout
+        class: caution
+        text: The key is public once it ships.
+
+  - name: the marker line is not part of the callout body
+    markdown: |
+      > [!NOTE]
+      > Only this sentence.
+    found:
+      - kind: callout
+        class: note
+        text: Only this sentence.
+
+  - name: a marker the dialect does not know leaves an ordinary quote
+    markdown: |
+      > [!ASIDE]
+      > Nothing claims this one.
+    found: []
+
+  - name: a marker sharing its line with text is not a callout
+    markdown: |
+      > [!NOTE] and more
+      > The rest of the quote.
+    found: []
+
+  - name: a quote without any marker stays a quote
+    markdown: |
+      > Plain quoted words.
+    found: []
+
+  - name: a callout holds every paragraph of its quote
+    markdown: |
+      > [!WARNING]
+      > First line.
+      >
+      > Second paragraph.
+    found:
+      - kind: callout
+        class: warning
+        text: First line. Second paragraph.
+
+  - name: two callouts in one document are both recognised
+    markdown: |
+      > [!NOTE]
+      > The first.
+
+      > [!TIP]
+      > The second.
+    found:
+      - kind: callout
+        class: note
+        text: The first.
+      - kind: callout
+        class: tip
+        text: The second.
+
+  - name: a place is a marker, a point and what follows as its caption
+    markdown: |
+      > [!MAP]
+      > 44.7866, 20.4489
+      > Belgrade, the city centre
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: Belgrade, the city centre
+
+  - name: a place needs no caption
+    markdown: |
+      > [!MAP]
+      > 44.7866, 20.4489
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+
+  - name: a caption spread over lines is read as one
+    markdown: |
+      > [!MAP]
+      > 44.7866, 20.4489
+      > Belgrade
+      > the city centre
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: Belgrade the city centre
+
+  - name: a point south and west of zero is still a point
+    markdown: |
+      > [!MAP]
+      > -22.9068467, -43.1728965
+      > Rio de Janeiro
+    found:
+      - kind: map
+        lat: "-22.9068467"
+        lng: "-43.1728965"
+        caption: Rio de Janeiro
+
+  - name: the point keeps the digits it was written with
+    markdown: |
+      > [!MAP]
+      > 44.80, 20.47000
+    found:
+      - kind: map
+        lat: "44.80"
+        lng: "20.47000"
+
+  - name: a point is digits with an optional sign and fraction, and nothing else
+    markdown: |
+      > [!MAP]
+      > Inf, NaN
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a number in exponent notation is not a point
+    markdown: |
+      > [!MAP]
+      > 4.48e1, 20.47
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a number written for a machine is not a point
+    markdown: |
+      > [!MAP]
+      > 0x1p-2, 20.47
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a map marker with no point under it stays a quote
+    markdown: |
+      > [!MAP]
+      > Belgrade, the city centre
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a map marker alone stays a quote
+    markdown: |
+      > [!MAP]
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a point with no comma stays a quote
+    markdown: |
+      > [!MAP]
+      > 44.7866 20.4489
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a latitude past the pole is written and cannot be placed
+    markdown: |
+      > [!MAP]
+      > 999, 20.4489
+    found:
+      - kind: unreadable
+        text: "[!MAP] 999, 20.4489"
+
+  - name: a longitude past the meridian is written and cannot be placed
+    markdown: |
+      > [!MAP]
+      > 44.7866, -200.5
+      > Nowhere.
+    found:
+      - kind: unreadable
+        text: "[!MAP] 44.7866, -200.5 Nowhere."
+
+  - name: a coordinate at the pole itself is a place
+    markdown: |
+      > [!MAP]
+      > -90, 180
+    found:
+      - kind: map
+        lat: "-90"
+        lng: "180"
+
+  - name: a coordinate too long to be a number is read by its digits and placed nowhere
+    markdown: |
+      > [!MAP]
+      > 1000000000000000000000000000000, 20.4489
+    found:
+      - kind: unreadable
+        text: "[!MAP] 1000000000000000000000000000000, 20.4489"
+
+  - name: words written under a point that reads nowhere come back with it
+    markdown: |
+      > [!MAP]
+      > 999, 20.4489
+      >
+      > The street I meant is below.
+    found:
+      - kind: unreadable
+        text: "[!MAP] 999, 20.4489 The street I meant is below."
+
+  - name: a point that reads nowhere keeps the markdown its words were written in
+    markdown: |
+      > [!MAP]
+      > 999, 20.4489
+      > [the principle](block:50386)
+    found:
+      - kind: unreadable
+        text: "[!MAP] 999, 20.4489 [the principle](block:50386)"
+
+  - name: a point that reads nowhere inside a callout leaves the callout its own words
+    markdown: |
+      > [!NOTE]
+      > Where to find us.
+      >
+      > > [!MAP]
+      > > 999, 20.4489
+    found:
+      - kind: callout
+        class: note
+        text: Where to find us.
+      - kind: unreadable
+        text: "[!MAP] 999, 20.4489"
+
+  - name: a coordinate written in exponent notation stays a quote
+    markdown: |
+      > [!MAP]
+      > 1e5, 20.4489
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a coordinate ending on its point stays a quote
+    markdown: |
+      > [!MAP]
+      > 44., 20.4489
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a coordinate opening on its point stays a quote
+    markdown: |
+      > [!MAP]
+      > .5, 20.4489
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a coordinate longer than a float can hold is still digits
+    markdown: |
+      > [!MAP]
+      > 44.78660000000000000000000000000000000000001, 20.4489
+    found:
+      - kind: map
+        lat: "44.78660000000000000000000000000000000000001"
+        lng: "20.4489"
+
+  - name: a callout and a place in one document are both recognised
+    markdown: |
+      > [!NOTE]
+      > Where to find us.
+
+      > [!MAP]
+      > 44.7866, 20.4489
+      > Belgrade
+    found:
+      - kind: callout
+        class: note
+        text: Where to find us.
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: Belgrade
+
+  - name: a place inside a callout is found, and the callout keeps its own words
+    markdown: |
+      > [!NOTE]
+      > Where to find us.
+      >
+      > > [!MAP]
+      > > 44.7866, 20.4489
+    found:
+      - kind: callout
+        class: note
+        text: Where to find us.
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+
+  - name: a marker in lower case stays a quote
+    markdown: |
+      > [!note]
+      > Body.
+    found: []
+
+  - name: a body carrying emphasis keeps its words and nothing else
+    markdown: |
+      > [!NOTE]
+      > Body with **bold** word.
+    found:
+      - kind: callout
+        class: note
+        text: Body with bold word.
+
+  - name: a body carrying a code span keeps its words
+    markdown: |
+      > [!TIP]
+      > Body with `code` span.
+    found:
+      - kind: callout
+        class: tip
+        text: Body with code span.
+
+  - name: an image in a body is not a link
+    markdown: |
+      > [!WARNING]
+      > Body with ![alt](https://example.invalid/img.png) image.
+    found:
+      - kind: callout
+        class: warning
+        text: Body with alt image.
+
+  - name: a page ref names its scheme and keeps its destination whole
+    markdown: |
+      Read [the libraries page](page:42685) first.
+    found:
+      - kind: link
+        scheme: page
+        destination: "page:42685"
+        text: the libraries page
+
+  - name: a block ref is a scheme of its own
+    markdown: |
+      The [principle](block:50386) says it.
+    found:
+      - kind: link
+        scheme: block
+        destination: "block:50386"
+        text: principle
+
+  - name: a tail naming something rather than numbering it is handed on the same way
+    markdown: |
+      Start at [the front page](page:home), not at the [glossary](page:glossary).
+    found:
+      - kind: link
+        scheme: page
+        destination: "page:home"
+        text: the front page
+      - kind: link
+        scheme: page
+        destination: "page:glossary"
+        text: glossary
+
+  - name: a link under no scheme of ours names none, and keeps its destination
+    markdown: |
+      Built on [goldmark](https://github.com/yuin/goldmark).
+    found:
+      - kind: link
+        destination: "https://github.com/yuin/goldmark"
+        text: goldmark
+
+  - name: what follows the scheme is handed on as written, whatever it is
+    markdown: |
+      A [signed number](page:+5) is what the source wrote.
+    found:
+      - kind: link
+        scheme: page
+        destination: "page:+5"
+        text: signed number
+
+  - name: a link inside a callout is found
+    markdown: |
+      > [!NOTE]
+      > Read the [principle](block:50386) first.
+    found:
+      - kind: callout
+        class: note
+        text: Read the principle first.
+      - kind: link
+        scheme: block
+        destination: "block:50386"
+        text: principle
+
+  - name: a coordinate keeps the sign it was written with
+    markdown: |
+      > [!MAP]
+      > +44.80, -20.47
+    found:
+      - kind: map
+        lat: "+44.80"
+        lng: "-20.47"
+
+  - name: an autolink is not a link the dialect reports
+    markdown: |
+      Plain <https://example.com/page> stands on its own.
+    found: []
+
+  - name: a place inside an ordinary quote is not found
+    markdown: |
+      > Plain quoted words.
+      >
+      > > [!MAP]
+      > > 44.7866, 20.4489
+    found: []
+    declined:
+      - "[!MAP]"
+
+  - name: a place nested deeper than a callout's own children is still not its words
+    markdown: |
+      > [!NOTE]
+      > Look.
+      >
+      > - item
+      >
+      >   > [!MAP]
+      >   > 44.7866, 20.4489
+    found:
+      - kind: callout
+        class: note
+        text: Look. item
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+
+  - name: a callout inside an ordinary quote is not made either
+    markdown: |
+      > Plain quoted words.
+      >
+      > > [!TIP]
+      > > Inner.
+    found: []
+    declined:
+      - "[!TIP]"
+
+  - name: a marker with a space after it is not a marker
+    markdown: "> [!NOTE] \n> Body.\n"
+    found: []
+
+  - name: a callout inside a callout is one callout, not two
+    markdown: |
+      > [!NOTE]
+      > Outer.
+      >
+      > > [!TIP]
+      > > Inner.
+    found:
+      - kind: callout
+        class: note
+        text: Outer. [!TIP] Inner.
+    declined:
+      - "[!TIP]"
+
+  - name: a marker below the first line is not a marker
+    markdown: |
+      > Words came first.
+      > [!NOTE]
+    found: []
+
+  - name: a callout with nothing under it is still a callout
+    markdown: |
+      > [!NOTE]
+    found:
+      - kind: callout
+        class: note
+
+  - name: a line break inside a body reads as a space
+    markdown: |
+      > [!NOTE]
+      > one
+      > two
+    found:
+      - kind: callout
+        class: note
+        text: one two
+
+  - name: a list in a body is read as its words
+    markdown: |
+      > [!NOTE]
+      > - one
+      > - two
+    found:
+      - kind: callout
+        class: note
+        text: one two
+
+  - name: a fenced block in a body is left out of the words
+    markdown: |
+      > [!NOTE]
+      > Body.
+      >
+      > ```go
+      > code()
+      > ```
+    found:
+      - kind: callout
+        class: note
+        text: Body.
+
+  - name: a table in a body is read as its cells
+    markdown: |
+      > [!NOTE]
+      > | a | b |
+      > |---|---|
+      > | 1 | 2 |
+    found:
+      - kind: callout
+        class: note
+        text: a b 1 2
+
+  - name: a strikethrough in a body keeps the words and drops the marks
+    markdown: |
+      > [!NOTE]
+      > ~~gone~~ and here.
+    found:
+      - kind: callout
+        class: note
+        text: gone and here.
+
+  - name: a task list in a body is read as its words
+    markdown: |
+      > [!NOTE]
+      > - [ ] one
+      > - [x] two
+    found:
+      - kind: callout
+        class: note
+        text: one two
+
+  - name: a tab between words reads as one space
+    markdown: "> [!NOTE]\n> one\tTwo\n"
+    found:
+      - kind: callout
+        class: note
+        text: one Two
+
+  - name: spaces run together read as one
+    markdown: |
+      > [!NOTE]
+      > one  two
+    found:
+      - kind: callout
+        class: note
+        text: one two
+
+  - name: a non-breaking space is not one of the blanks and stays where it was
+    markdown: "> [!NOTE]\n> one two\n"
+    found:
+      - kind: callout
+        class: note
+        text: "one two"
+
+  - name: a caption written outside ASCII keeps its letters whole
+    markdown: |
+      > [!MAP]
+      > 44.7866, 20.4489
+      > Кнез Михаилова, Београд
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: "Кнез Михаилова, Београд"
+
+  - name: a caption opening on tabs keeps its tail
+    markdown: "> [!MAP]\n> 44.7866, 20.4489\n> \t\tКнез Михаилова\n"
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: "Кнез Михаилова"
+
+  - name: a caption stays the markdown it was written as
+    markdown: |
+      > [!MAP]
+      > 44.7866, 20.4489
+      > [the principle](block:50386)
+    found:
+      - kind: map
+        lat: "44.7866"
+        lng: "20.4489"
+        caption: "[the principle](block:50386)"
