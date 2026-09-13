@@ -3,6 +3,7 @@ package org.wikilayer.wlmarkdown
 import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.commonmark.ext.autolink.AutolinkExtension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
@@ -62,6 +63,7 @@ class Dialect {
                         TablesExtension.create(),
                         StrikethroughExtension.create(),
                         TaskListItemsExtension.create(),
+                        AutolinkExtension.create(),
                     ),
                 ).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
                 .build()

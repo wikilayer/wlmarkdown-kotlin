@@ -1,11 +1,13 @@
 # Changelog
 
-A Kotlin library, `org.wikilayer:wlmarkdown-kotlin`, at
+A Kotlin library at
 [github.com/wikilayer/wlmarkdown-kotlin](https://github.com/wikilayer/wlmarkdown-kotlin),
-built on [commonmark-java](https://github.com/commonmark/commonmark-java):
+built on [commonmark-java](https://github.com/commonmark/commonmark-java) and served
+by JitPack:
 
 ```kotlin
 repositories {
+    mavenCentral()
     maven("https://jitpack.io")
 }
 
@@ -13,6 +15,9 @@ dependencies {
     implementation("com.github.wikilayer:wlmarkdown-kotlin:0.6.0")
 }
 ```
+
+`mavenCentral()` is there for the parser and the YAML reader this library depends
+on; JitPack serves only this repository.
 
 It recognises the markdown dialect of WikiLayer, a wiki whose pages are a tree of
 nodes: GitHub-flavoured markdown plus callouts, map embeds, and links naming a node
@@ -32,27 +37,19 @@ the pages rather than to a parser.
 
 This is a port. [wlmarkdown](https://github.com/wikilayer/wlmarkdown) leads, every
 port reads the same rules and answers the same corpus, and the major and minor
-numbers move together to say so. What they promise is agreement on the corpus, and
-the corpus does not reach everything: the difference it cannot reach is named below,
-and the README says where the parsers underneath differ. Which version of
-commonmark-java this is built against is in `build.gradle.kts`, where it cannot go
-stale.
+numbers move together to say so: 0.6 here is 0.6 there and in
+[the Swift port](https://github.com/wikilayer/wlmarkdown-swift). What they promise
+is agreement on the corpus; where the parsers underneath differ without changing an
+answer, the README says so. Which version of commonmark-java this is built against
+is in `build.gradle.kts`, where it cannot go stale.
 
-The version is 0.x because the shape is still settling: every reader of these
-libraries so far has moved something in their API rather than working around it, so
-a minor may still change an answer you relied on. Read the entry before taking one.
+The version is 0.x because the shape is still settling: every project that has taken
+these libraries so far has moved something in their API rather than working around
+it, so a minor may still change an answer you relied on. Read the entry before
+taking a new one.
 
-## Where the ports do not agree
-
-One difference is left, and no corpus case can reach it, so a green corpus does not
-prove the ports answer alike. It is open in 0.6.0:
-
-- A bare URL is a link in Go and plain words here. The dialect asks every port to
-  switch linkifying on; this port does not, because the Go port leaves such a link
-  out of `Found` and switching it on here would put it in.
-
-Signatures are not repeated here; the README carries an example of each call. This
-file says only what changed between versions and what that asks of you.
+Signatures are not repeated here; the README shows the calls in use. This file says
+only what changed between versions and what that asks of you.
 
 Changes are documented here in the format of
 [Keep a Changelog](https://keepachangelog.com/).
@@ -61,11 +58,14 @@ Changes are documented here in the format of
 
 ### Added
 
-- The port. It answers the whole corpus the leading port answers, callouts, map
+- The port. It answers the whole corpus the leading port answers: callouts, map
   embeds, points nowhere on Earth, links naming a node, and the quotes the dialect
-  turns down, and it starts at the minor the other ports are on rather than at zero,
-  because a matching major and minor is what says the behaviour is the same.
-- `Dialect.parser()`, for a host that walks its own tree. It carries the GFM
-  extensions the dialect expects and the source spans a `Reading` reads a marker
-  line from. A tree parsed without them answers differently, so take this parser
-  rather than building one beside it.
+  turns down.
+- It opens at the minor the other ports are on rather than at zero, because a
+  matching major and minor is what tells a reader the behaviour is the same.
+- `Dialect().parser()`, for a host that walks its own tree. It carries the GFM
+  extensions the dialect expects, bare-URL linking among them, and the source spans
+  a `Reading` reads a marker line from. A tree parsed without them answers
+  differently, so take this parser rather than building one beside it.
+- `children()`, an extension on commonmark's `Node`, because a host asking a
+  `Reading` about a quote has to find the quote first.

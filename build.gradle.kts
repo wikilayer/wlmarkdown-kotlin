@@ -7,7 +7,9 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
-group = "org.wikilayer"
+// JitPack builds this repository under com.github.wikilayer and checks the group in
+// the published POM against the one the reader asked for, so the two must agree.
+group = "com.github.wikilayer"
 version = "0.6.0"
 
 repositories {
@@ -16,6 +18,7 @@ repositories {
 
 dependencies {
     api("org.commonmark:commonmark:0.30.0")
+    api("org.commonmark:commonmark-ext-autolink:0.30.0")
     api("org.commonmark:commonmark-ext-gfm-tables:0.30.0")
     api("org.commonmark:commonmark-ext-gfm-strikethrough:0.30.0")
     api("org.commonmark:commonmark-ext-task-list-items:0.30.0")

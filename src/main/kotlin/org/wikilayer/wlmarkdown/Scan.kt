@@ -14,8 +14,8 @@ internal class Scan(
     fun openingLine(quote: BlockQuote): String =
         (quote.firstChild as? Paragraph)?.let { rawLines(it).firstOrNull() } ?: ""
 
-    fun isAutolink(link: Link): Boolean =
-        link.sourceSpans.firstOrNull()?.let { source.startsWith("<", it.inputIndex) } ?: false
+    fun isWritten(link: Link): Boolean =
+        link.sourceSpans.firstOrNull()?.let { source.startsWith("[", it.inputIndex) } ?: false
 }
 
-internal fun Node.children(): List<Node> = generateSequence(firstChild) { it.next }.toList()
+fun Node.children(): List<Node> = generateSequence(firstChild) { it.next }.toList()

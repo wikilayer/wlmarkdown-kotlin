@@ -47,6 +47,24 @@ class ReadingTests {
     }
 
     @Test
+    fun `a bare address is a link in the tree and no link the dialect reports`() {
+        val source = "Plain https://example.invalid/page stands on its own.\n"
+        val reading = Reading(source)
+        val linked =
+            reading.document
+                .children()
+                .flatMap { it.children() }
+                .filterIsInstance<org.commonmark.node.Link>()
+
+        assertThat(linked)
+            .describedAs("the dialect asks every port to switch linkifying on, so the tree carries the link")
+            .hasSize(1)
+        assertThat(reading.recognise())
+            .describedAs("a link nobody wrote as a link is none of the dialect's business")
+            .isEmpty()
+    }
+
+    @Test
     fun `a destination names its scheme or none`() {
         val dialect = Dialect()
         assertThat(dialect.scheme("page:home"))

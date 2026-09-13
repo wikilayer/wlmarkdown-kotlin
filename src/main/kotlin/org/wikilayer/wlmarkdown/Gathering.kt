@@ -62,7 +62,7 @@ internal class Gathering(
         if (scan.openingLine(quote) == dialect.rules.mapMarker) dialect.place(quote, scan) else null
 
     private fun reported(link: Link): Found? =
-        if (scan.isAutolink(link)) {
+        if (!scan.isWritten(link)) {
             null
         } else {
             Found(
