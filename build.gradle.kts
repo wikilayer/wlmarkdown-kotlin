@@ -42,9 +42,10 @@ kotlin {
     jvmToolchain(17)
 }
 
+// No javadoc jar: nothing here builds documentation, and an empty one published
+// beside the sources would only promise a reference that does not exist.
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 publishing {

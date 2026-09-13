@@ -61,13 +61,18 @@ Past that the pair is still read and there is nowhere to put it, so the quote co
 back as `kind = "unreadable"` carrying the words the source wrote, its lines joined
 by single spaces, rather than as a map of a place the page does not name.
 
-Every link somebody wrote as a link is reported, and `destination` comes back
-character for character. A link may name a node instead of a URL, under the scheme
-`page:` or `block:`, and then `scheme` says which; under any other address `scheme`
-is empty, which is an answer rather than a failure. Which node names exist is a
-question the store answers. A bare address becomes a link in the tree, because the
-dialect asks every port to switch linkifying on, and it is left out of `Found`, as
-is `<https://example.com>` written in angle brackets: nobody wrote those as links.
+A link somebody wrote as a link is reported, and `destination` comes back character
+for character. A link may name a node instead of a URL, under the scheme `page:` or
+`block:`, and then `scheme` says which; under any other address `scheme` is empty,
+which is an answer rather than a failure. Which node names exist is a question the
+store answers. A bare address becomes a link in the tree, because the dialect asks
+every port to switch linkifying on, and it is left out of `Found`, as is
+`<https://example.com>` written in angle brackets: nobody wrote those as links.
+
+A link inside a map's caption gets no entry of its own either. The caption comes
+back as the markdown it was written in, link and all, and the same holds for the
+words of a point nowhere on Earth, so a host collecting every link off `Found`
+should read those two strings as markdown rather than expect them broken out.
 
 `markers` names what the dialect opens constructs with, `classes` what a callout can
 carry and `schemes` what a link of ours can name. Read them rather than writing down
@@ -79,6 +84,10 @@ A host that builds its own tree holds a `BlockQuote` and needs to know what it i
 `Reading` answers that, over the source string the document was parsed from:
 
 ```kotlin
+import org.commonmark.node.BlockQuote
+import org.wikilayer.wlmarkdown.Reading
+import org.wikilayer.wlmarkdown.children
+
 val markdown = "…the text your own store holds…"
 val reading = Reading(markdown)
 for (quote in reading.document.children().filterIsInstance<BlockQuote>()) {
@@ -88,17 +97,21 @@ for (quote in reading.document.children().filterIsInstance<BlockQuote>()) {
 }
 ```
 
-`children()` is an extension on commonmark's `Node` and this library exposes it,
-because walking a tree by `firstChild` and `next` is not what the caller came here
-to write.
+`children()` is an extension this library declares on commonmark's `Node`, so it is
+imported from `org.wikilayer.wlmarkdown` rather than found on the node itself.
+Walking a tree by `firstChild` and `next` is not what the caller came here to write.
 
-Parse with `Dialect().parser()` if you build the tree yourself. It carries the GFM
-extensions the dialect expects and the source spans a `Reading` reads a marker line
-from, and a tree parsed without them answers differently.
+A `Reading` parses the source it is given, and `document` is that tree. If you have
+already parsed the same string yourself, hand the reading the dialect you parsed
+with, `Reading(markdown, dialect)`, and ask it about your own quotes. Parse with
+`Dialect().parser()` when you do: it carries the GFM extensions the dialect expects
+and the source spans a `Reading` reads a marker line from, and a tree parsed without
+them answers differently.
 
 A quote written as a map whose point is outside `90` and `180` is not a place, so
-`place` stays silent about it and `unreadable` hands back the words instead. Show
-them: the only person who can fix such coordinates is the one who typed them.
+`place` stays silent about it and `unreadable` hands back the words instead, the
+marker line included, its lines joined by single spaces. Show them: the only person
+who can fix such coordinates is the one who typed them.
 
 `opensAConstruct` says whether a quote carries any of the dialect's markers, and
 `Dialect().scheme` names the scheme of a destination, or none:
@@ -109,10 +122,10 @@ Dialect().scheme("https://…")   // null
 ```
 
 `reading.declined()` hands back the quotes the dialect turned down, one entry per
-quote with the marker it carried: a map whose coordinates did not read, or a marker
-standing inside a quote the dialect made nothing of, where it opens no construct at
-all. Deciding that from outside would mean writing the dialect's rule for what opens
-a construct a second time.
+quote with the marker it carried: a map whose coordinates did not read, and a marker
+standing inside another quote, which opens nothing whether the dialect made a callout
+of that outer quote or left it alone. Deciding that from outside would mean writing
+the dialect's rule for what opens a construct a second time.
 
 A `Reading` is built on one source string and answers by position in it, so it must
 be the string its document was parsed from.
@@ -126,18 +139,17 @@ them one way and a phone app another.
 ## The corpus
 
 `src/main/resources/rules.yaml` holds what the dialect knows and
-`src/test/resources/dialect.yaml` the cases that define it. The rules are copied
-beside the cases as well, so a test can check the library's answers against the
-rules instead of against the same file the library read them from. All three copies
+`src/test/resources/dialect.yaml` the cases that define it, one copy of each. Both
 come from the leading port and are refreshed with `make sync-corpus`, which reads
 them from a clone of [wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the
 directory next to this one.
 
 The whole corpus runs here on every build, so a case answered differently by two
 ports goes red rather than reaching a reader. The tests also ask the leading port
-for each copied file and compare it byte for byte, because a copy nobody refreshed
-leaves this port answering an older dialect with every test still green. That check
-needs the network, and without it `make test` fails rather than passing quietly.
+for each of those two files and compare them byte for byte, because a copy nobody
+refreshed leaves this port answering an older dialect with every test still green.
+That check needs the network, and without it `make test` fails rather than passing
+quietly.
 
 ## Where the ports differ
 
@@ -162,7 +174,10 @@ a node of its own.
 ## Running it
 
 ```sh
+make test-build    # compile the library and its tests
 make test          # the corpus, the rules tests, and the host-side answers
+make build         # everything, including the jar
+make format        # ktlint, writing its fixes back
 make lint          # commentcensor, ktlint and detekt
 make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 ```

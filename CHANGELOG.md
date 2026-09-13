@@ -1,24 +1,10 @@
 # Changelog
 
-A Kotlin library at
+`com.github.wikilayer:wlmarkdown-kotlin`, a Kotlin library at
 [github.com/wikilayer/wlmarkdown-kotlin](https://github.com/wikilayer/wlmarkdown-kotlin),
-built on [commonmark-java](https://github.com/commonmark/commonmark-java), built for
-JDK 17 and served by JitPack:
-
-```kotlin
-repositories {
-    mavenCentral()
-    maven("https://jitpack.io")
-}
-
-dependencies {
-    implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.6.0")
-}
-```
-
-The version is the tag, `v` and all, because that is the name JitPack serves it
-under. `mavenCentral()` is there for the parser and the YAML reader underneath;
-JitPack serves only this repository.
+built on [commonmark-java](https://github.com/commonmark/commonmark-java) for JDK 17
+and served by JitPack at the name of its tag. The README carries the lines to put in
+a build file, so that they are in one place rather than two.
 
 It recognises the markdown dialect of WikiLayer, a wiki whose pages are a tree of
 nodes: GitHub-flavoured markdown plus callouts, map embeds, and links naming a node
@@ -70,8 +56,8 @@ Changes are documented here in the format of
   differently, so take this parser rather than building one beside it.
 - `children()`, an extension on commonmark's `Node`, because a host asking a
   `Reading` about a quote has to find the quote first.
-- A test that asks the leading port for every file copied from it and compares them
-  byte for byte, so a copy nobody refreshed goes red here rather than answering an
+- A test that asks the leading port for each file copied from it and compares them
+  on disk, by path, so a copy nobody refreshed goes red here rather than answering an
   older dialect in silence. It reaches the network, and `make test` therefore does
   too.
 - commonmark and kotlinx-serialization-core are exported rather than hidden: a host
