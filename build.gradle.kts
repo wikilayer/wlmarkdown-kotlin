@@ -7,10 +7,12 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
-// JitPack builds this repository under com.github.wikilayer and checks the group in
-// the published POM against the one the reader asked for, so the two must agree.
+// JitPack builds this repository under com.github.wikilayer at the name of the tag,
+// and Gradle refuses a module whose POM carries other coordinates than the ones it
+// asked for. So the group is the one JitPack serves, and the version is whatever it
+// passes in, falling back to the tag this branch is heading for.
 group = "com.github.wikilayer"
-version = "0.6.0"
+if (version == Project.DEFAULT_VERSION) version = "v0.6.0"
 
 repositories {
     mavenCentral()
@@ -22,6 +24,9 @@ dependencies {
     api("org.commonmark:commonmark-ext-gfm-tables:0.30.0")
     api("org.commonmark:commonmark-ext-gfm-strikethrough:0.30.0")
     api("org.commonmark:commonmark-ext-task-list-items:0.30.0")
+    // Found is @Serializable, so whoever holds one needs the annotations on their
+    // own compile classpath rather than only on ours.
+    api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0")
     implementation("io.heapy.kotaml:kotaml:0.108.0")
 
     testImplementation(kotlin("test"))

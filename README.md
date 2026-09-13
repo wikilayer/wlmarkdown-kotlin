@@ -7,6 +7,8 @@ the same corpus of cases the Go port and
 [the Swift port](https://github.com/wikilayer/wlmarkdown-swift) answer.
 
 ```kotlin
+import org.wikilayer.wlmarkdown.Dialect
+
 val found = Dialect().recognise("> [!TIP]\n> Try the shorter form.\n")
 ```
 
@@ -23,28 +25,49 @@ says which fields carry anything:
 The field is `calloutClass` because `class` is a word Kotlin keeps for itself; the
 corpus and the other ports call it `class`, and the YAML key is still `class`.
 
+## Taking it
+
+The library is served by JitPack from this repository, and it is built for JDK 17:
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.6.0")
+}
+```
+
+The version is the tag, `v` and all. `mavenCentral()` is there for the parser and
+the YAML reader underneath; JitPack serves only this repository. Everything lives in
+the package `org.wikilayer.wlmarkdown`.
+
 ## What it recognises
 
 A blockquote whose first line is exactly `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`,
 `[!WARNING]` or `[!CAUTION]` is a callout of that class. A marker sharing its line
 with words, or written in lower case, leaves an ordinary quote.
 
-A `[!MAP]` marker followed by a line of two numbers is a map embed, and whatever
-follows is its caption. Both numbers are digits carrying an optional sign and an
-optional fraction, and nothing else: no exponent, no hexadecimal, no infinity. They
-come back as the source wrote them, digit for digit, because rounding a coordinate
-moves the point.
+A `[!MAP]` marker followed by a line of two numbers is a map embed, and the lines
+under them, as far as that paragraph runs, are its caption. Both numbers are digits
+carrying an optional sign and an optional fraction, and nothing else: no exponent,
+no hexadecimal, no infinity. They come back as the source wrote them, digit for
+digit, because rounding a coordinate moves the point.
 
 A latitude may go as far as 90 and a longitude as far as 180, both bounds included.
 Past that the pair is still read and there is nowhere to put it, so the quote comes
-back as `kind = "unreadable"` carrying the words as they were written rather than as
-a map of a place the page does not name.
+back as `kind = "unreadable"` carrying the words the source wrote, its lines joined
+by single spaces, rather than as a map of a place the page does not name.
 
-A link may name a node instead of a URL, under the scheme `page:` or `block:`. The
-destination comes back character for character; which names exist is a question the
-store answers. Only a link somebody wrote as one is reported: a bare address becomes
-a link in the tree, because the dialect asks every port to switch linkifying on, and
-it is left out of `Found`, as is `<https://example.com>` written in angle brackets.
+Every link somebody wrote as a link is reported, and `destination` comes back
+character for character. A link may name a node instead of a URL, under the scheme
+`page:` or `block:`, and then `scheme` says which; under any other address `scheme`
+is empty, which is an answer rather than a failure. Which node names exist is a
+question the store answers. A bare address becomes a link in the tree, because the
+dialect asks every port to switch linkifying on, and it is left out of `Found`, as
+is `<https://example.com>` written in angle brackets: nobody wrote those as links.
 
 `markers` names what the dialect opens constructs with, `classes` what a callout can
 carry and `schemes` what a link of ours can name. Read them rather than writing down
@@ -74,12 +97,11 @@ extensions the dialect expects and the source spans a `Reading` reads a marker l
 from, and a tree parsed without them answers differently.
 
 A quote written as a map whose point is outside `90` and `180` is not a place, so
-`place` stays silent about it and `unreadable` hands back the words as they stand in
-the source. Show them: the only person who can fix such coordinates is the one who
-typed them.
+`place` stays silent about it and `unreadable` hands back the words instead. Show
+them: the only person who can fix such coordinates is the one who typed them.
 
 `opensAConstruct` says whether a quote carries any of the dialect's markers, and
-`Dialect.scheme` names the scheme of a destination, or none:
+`Dialect().scheme` names the scheme of a destination, or none:
 
 ```kotlin
 Dialect().scheme("page:home")   // "page"
@@ -104,13 +126,18 @@ them one way and a phone app another.
 ## The corpus
 
 `src/main/resources/rules.yaml` holds what the dialect knows and
-`src/test/resources/dialect.yaml` the cases that define it, with a second copy of
-the rules beside the cases so the tests read them without reaching into the library.
-All three are copies of the files in the leading port, refreshed with
-`make sync-corpus`, which reads them from a clone of
-[wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the directory next to this
-one. The whole corpus runs here on every build, so a case answered differently by
-two ports goes red rather than reaching a reader.
+`src/test/resources/dialect.yaml` the cases that define it. The rules are copied
+beside the cases as well, so a test can check the library's answers against the
+rules instead of against the same file the library read them from. All three copies
+come from the leading port and are refreshed with `make sync-corpus`, which reads
+them from a clone of [wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the
+directory next to this one.
+
+The whole corpus runs here on every build, so a case answered differently by two
+ports goes red rather than reaching a reader. The tests also ask the leading port
+for each copied file and compare it byte for byte, because a copy nobody refreshed
+leaves this port answering an older dialect with every test still green. That check
+needs the network, and without it `make test` fails rather than passing quietly.
 
 ## Where the ports differ
 
@@ -140,5 +167,6 @@ make lint          # commentcensor, ktlint and detekt
 make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 ```
 
-`commentcensor` is ours and lives outside this repository; `make test` and the
-checks CI runs do not need it.
+`make test` reaches the network, as the section above says. `commentcensor` is ours
+and lives outside this repository, so `make lint` is ours too; `./gradlew ktlintCheck
+detekt` is the part of it anyone can run, and it is what CI runs.

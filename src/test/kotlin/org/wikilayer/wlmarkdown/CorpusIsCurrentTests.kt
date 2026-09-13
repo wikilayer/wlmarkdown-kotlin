@@ -13,30 +13,33 @@ import java.time.Duration
 class CorpusIsCurrentTests {
     @TestFactory
     fun `every file copied from the leading port is still the one it holds`(): List<DynamicTest> =
-        COPIED_FROM_THE_LEADING_PORT.map { name ->
-            DynamicTest.dynamicTest(name) {
-                assertThat(held("/$name"))
+        COPIED.map { shared ->
+            DynamicTest.dynamicTest(shared.name) {
+                assertThat(held("/${shared.name}"))
                     .describedAs(
-                        "$name here is not the one the leading port holds, so this port answers " +
-                            "an older dialect than the others; run make sync-corpus",
-                    ).isEqualTo(leading(name))
+                        "${shared.name} here is not the one the leading port holds, so this port " +
+                            "answers an older dialect than the others; run make sync-corpus",
+                    ).isEqualTo(leading(shared.name))
             }
         }
 
     @TestFactory
-    fun `every file the library carries is the one the tests answer to`(): List<DynamicTest> =
-        CARRIED_BY_THE_LIBRARY.map { name ->
-            DynamicTest.dynamicTest(name) {
-                assertThat(carried("/$name"))
-                    .describedAs("the two copies of $name drifted; run make sync-corpus")
-                    .isEqualTo(held("/$name"))
+    fun `a file lying here twice is the same file in both places`(): List<DynamicTest> =
+        COPIED.filter { it.theLibraryCarriesItToo }.map { shared ->
+            DynamicTest.dynamicTest(shared.name) {
+                assertThat(carried("/${shared.name}"))
+                    .describedAs("the two copies of ${shared.name} drifted; run make sync-corpus")
+                    .isEqualTo(held("/${shared.name}"))
             }
         }
 
     @Test
-    fun `the lists name every shared file, so nothing is checked by accident`() {
-        assertThat(COPIED_FROM_THE_LEADING_PORT).containsAll(CARRIED_BY_THE_LIBRARY)
-        assertThat(COPIED_FROM_THE_LEADING_PORT).hasSizeGreaterThan(1)
+    fun `the list names every file sync-corpus copies, so none is checked by accident`() {
+        assertThat(COPIED.map { it.name })
+            .describedAs("sync-corpus copies rules.yaml to two places and dialect.yaml to one")
+            .containsExactlyInAnyOrder("rules.yaml", "dialect.yaml")
+        assertThat(COPIED.filter { it.theLibraryCarriesItToo }.map { it.name })
+            .containsExactly("rules.yaml")
     }
 
     private fun held(name: String): ByteArray =
@@ -70,9 +73,17 @@ class CorpusIsCurrentTests {
             .connectTimeout(Duration.ofSeconds(SECONDS_BEFORE_GIVING_UP))
             .build()
 
+    private data class Shared(
+        val name: String,
+        val theLibraryCarriesItToo: Boolean,
+    )
+
     private companion object {
-        val COPIED_FROM_THE_LEADING_PORT = listOf("rules.yaml", "dialect.yaml")
-        val CARRIED_BY_THE_LIBRARY = listOf("rules.yaml")
+        val COPIED =
+            listOf(
+                Shared("rules.yaml", theLibraryCarriesItToo = true),
+                Shared("dialect.yaml", theLibraryCarriesItToo = false),
+            )
         const val LEADING_PORT = "https://raw.githubusercontent.com/wikilayer/wlmarkdown/main/corpus/"
         const val SECONDS_BEFORE_GIVING_UP = 20L
         const val FOUND_IT = 200
