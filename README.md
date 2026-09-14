@@ -94,12 +94,13 @@ import org.wikilayer.wlmarkdown.children
 fun quotesIn(node: Node): List<BlockQuote> =
     node.children().flatMap { listOfNotNull(it as? BlockQuote) + quotesIn(it) }
 
-val markdown = "…the text your own store holds…"
-val reading = Reading(markdown)
-for (quote in quotesIn(reading.document)) {
-    reading.place(quote)?.let { }         // lat, lng, caption
-    reading.unreadable(quote)?.let { }    // a point nowhere on Earth
-    reading.calloutClass(quote)?.let { }  // note, tip, warning …
+fun draw(markdown: String) {
+    val reading = Reading(markdown)
+    for (quote in quotesIn(reading.document)) {
+        reading.place(quote)?.let { }         // lat, lng, caption
+        reading.unreadable(quote)?.let { }    // a point nowhere on Earth
+        reading.calloutClass(quote)?.let { }  // note, tip, warning …
+    }
 }
 ```
 
@@ -126,8 +127,8 @@ them: the only person who can fix such coordinates is the one who typed them.
 `Dialect().scheme` names the scheme of a destination, or none:
 
 ```kotlin
-Dialect().scheme("page:home")   // "page"
-Dialect().scheme("https://…")   // null
+val named = Dialect().scheme("page:home")     // "page"
+val elsewhere = Dialect().scheme("https://…") // null
 ```
 
 `reading.declined()` hands back a `Declined` per quote the dialect turned down,
@@ -153,7 +154,9 @@ them one way and a phone app another.
 `src/test/resources/dialect.yaml` the cases that define it, one copy of each. Both
 come from the leading port and are refreshed with `make sync-corpus`, which reads
 them from a clone of [wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the
-directory next to this one.
+directory next to this one. Pull that clone first: the target copies whatever it
+holds, and the check below compares against the leading port's `main`, so a stale
+neighbour keeps the run red however often the target is run.
 
 The whole corpus runs here whenever anything it depends on has moved, so a case
 answered differently by two ports goes red rather than reaching a reader. The tests
@@ -199,4 +202,5 @@ make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 `make test` and `make build` reach the network, as the section above says.
 `commentcensor` is ours
 and lives outside this repository, so `make lint` is ours too; `./gradlew ktlintCheck
-detekt` is the part of it anyone can run, and it is what CI runs.
+detekt` is the part of it anyone can run. CI runs `make test-build`, `make test` and
+that pair.

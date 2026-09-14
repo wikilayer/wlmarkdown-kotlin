@@ -19,11 +19,13 @@ class CorpusIsCurrentTests {
         COPIED.map { path ->
             DynamicTest.dynamicTest(path) {
                 val copy = File(repository, path)
-                assertThat(copy).describedAs("$path is missing; run make sync-corpus").exists()
+                assertThat(
+                    copy,
+                ).describedAs("$path is missing; pull the clone next door and run make sync-corpus").exists()
                 assertThat(copy.readBytes())
                     .describedAs(
                         "$path is not the file the leading port holds, so this port answers an " +
-                            "older dialect than the others; run make sync-corpus",
+                            "older dialect than the others; pull the clone next door and run make sync-corpus",
                     ).isEqualTo(leading(copy.name))
             }
         }
