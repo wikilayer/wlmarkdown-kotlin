@@ -4,12 +4,12 @@ import org.commonmark.node.BlockQuote
 import org.commonmark.node.Node
 
 class Reading(
-    source: String,
+    private val source: String,
     internal val dialect: Dialect = Dialect(),
 ) {
     internal val scan = Scan(source)
 
-    val document: Node = dialect.parser().parse(source)
+    val document: Node by lazy { dialect.parser().parse(source) }
 
     fun calloutClass(quote: BlockQuote): String? =
         if (quoteAbove(quote) != null) null else dialect.rules.calloutClassByMarker[scan.openingLine(quote)]

@@ -17,7 +17,7 @@ test-build:
 	./gradlew compileKotlin compileTestKotlin
 
 test:
-	./gradlew test
+	./gradlew test corpusIsCurrent
 
 build:
 	./gradlew build

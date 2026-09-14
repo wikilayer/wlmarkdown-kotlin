@@ -41,7 +41,7 @@ only what changed between versions and what that asks of you.
 Changes are documented here in the format of
 [Keep a Changelog](https://keepachangelog.com/).
 
-## v0.6.0 - 2026-09-14
+## [v0.6.0] - 2026-09-14
 
 ### Added
 
@@ -62,3 +62,5 @@ Changes are documented here in the format of
   too.
 - commonmark and kotlinx-serialization-core are exported rather than hidden: a host
   holds commonmark nodes to ask about, and `Found` is `@Serializable`.
+
+[v0.6.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.6.0

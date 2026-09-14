@@ -14,6 +14,10 @@ plugins {
 group = "com.github.wikilayer"
 if (version == Project.DEFAULT_VERSION) version = "v0.6.0"
 
+// The tests read the shared files where they lie rather than off the classpath,
+// so they are told where the checkout is instead of guessing at a working directory.
+val repositoryProperty = "wlmarkdown.repository"
+
 repositories {
     mavenCentral()
 }
@@ -34,8 +38,33 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.27.7")
 }
 
+// The corpus of the leading port is not an input Gradle can see, so an unchanged
+// checkout is up to date however far that corpus has moved since. The check that
+// asks it therefore runs in a task of its own that is never up to date and never
+// cached, which is the only way it answers the question it was written for.
+val reachesTheLeadingPort = "reaches-the-leading-port"
+
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform { excludeTags(reachesTheLeadingPort) }
+    systemProperty(repositoryProperty, projectDir.absolutePath)
+}
+
+val corpusIsCurrent by tasks.registering(Test::class) {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = "Asks the leading port whether this copy of the corpus is still its corpus."
+    testClassesDirs =
+        sourceSets.test
+            .get()
+            .output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags(reachesTheLeadingPort) }
+    systemProperty(repositoryProperty, projectDir.absolutePath)
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+}
+
+tasks.check {
+    dependsOn(corpusIsCurrent)
 }
 
 kotlin {

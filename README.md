@@ -1,9 +1,9 @@
 # wlmarkdown-kotlin
 
 The WikiLayer markdown dialect in Kotlin: GitHub-flavoured markdown, and then the
-constructs the dialect adds of its own. It is the Kotlin port of
-[wlmarkdown](https://github.com/wikilayer/wlmarkdown), which leads, and it answers
-the same corpus of cases the Go port and
+constructs the dialect adds of its own. It is a port of
+[wlmarkdown](https://github.com/wikilayer/wlmarkdown), the Go library that leads,
+and it answers the same corpus of cases that one and
 [the Swift port](https://github.com/wikilayer/wlmarkdown-swift) answer.
 
 ```kotlin
@@ -61,18 +61,20 @@ Past that the pair is still read and there is nowhere to put it, so the quote co
 back as `kind = "unreadable"` carrying the words the source wrote, its lines joined
 by single spaces, rather than as a map of a place the page does not name.
 
-A link somebody wrote as a link is reported, and `destination` comes back character
-for character. A link may name a node instead of a URL, under the scheme `page:` or
-`block:`, and then `scheme` says which; under any other address `scheme` is empty,
-which is an answer rather than a failure. Which node names exist is a question the
-store answers. A bare address becomes a link in the tree, because the dialect asks
-every port to switch linkifying on, and it is left out of `Found`, as is
-`<https://example.com>` written in angle brackets: nobody wrote those as links.
+A link somebody wrote as a link is reported, with the destination the parser read
+out of it: the brackets of `<page:a b>` are gone and `\_` is an underscore, as they
+are in any markdown link. A link may name a node instead of a URL, under the scheme
+`page:` or `block:`, and then `scheme` says which; under any other address `scheme`
+is empty, which is an answer rather than a failure. Which node names exist is a
+question the store answers. A bare address becomes a link in the tree, because the
+dialect asks every port to switch linkifying on, and it is left out of `Found`, as
+is `<https://example.com>` written in angle brackets: nobody wrote those as links.
 
-A link inside a map's caption gets no entry of its own either. The caption comes
-back as the markdown it was written in, link and all, and the same holds for the
-words of a point nowhere on Earth, so a host collecting every link off `Found`
-should read those two strings as markdown rather than expect them broken out.
+Where a link stands decides whether it gets an entry of its own. Inside a callout it
+does, and its words are inside the callout's `text` as well. Inside a map's caption
+it does not: the caption comes back as the markdown it was written in, link and all,
+and so do the words of a point nowhere on Earth. A host collecting every link off
+`Found` reads those two strings as markdown rather than expecting them broken out.
 
 `markers` names what the dialect opens constructs with, `classes` what a callout can
 carry and `schemes` what a link of ours can name. Read them rather than writing down
@@ -101,17 +103,17 @@ for (quote in reading.document.children().filterIsInstance<BlockQuote>()) {
 imported from `org.wikilayer.wlmarkdown` rather than found on the node itself.
 Walking a tree by `firstChild` and `next` is not what the caller came here to write.
 
-A `Reading` parses the source it is given, and `document` is that tree. If you have
-already parsed the same string yourself, hand the reading the dialect you parsed
-with, `Reading(markdown, dialect)`, and ask it about your own quotes. Parse with
-`Dialect().parser()` when you do: it carries the GFM extensions the dialect expects
-and the source spans a `Reading` reads a marker line from, and a tree parsed without
-them answers differently.
+`document` is the tree the reading parsed for itself, and asking for it is what makes
+it parse. A host with a tree of its own never asks: it hands its own quotes to
+`place`, `unreadable` and the rest, and the reading answers by their position in the
+string it holds. Parse that tree with `Dialect().parser()`, which carries the GFM
+extensions the dialect expects and the source spans a marker line is read from; a
+tree parsed without them answers differently.
 
 A quote written as a map whose point is outside `90` and `180` is not a place, so
 `place` stays silent about it and `unreadable` hands back the words instead, the
-marker line included, its lines joined by single spaces. Show them: the only person
-who can fix such coordinates is the one who typed them.
+marker line included and every run of blanks in them squeezed to one space. Show
+them: the only person who can fix such coordinates is the one who typed them.
 
 `opensAConstruct` says whether a quote carries any of the dialect's markers, and
 `Dialect().scheme` names the scheme of a destination, or none:
@@ -122,10 +124,11 @@ Dialect().scheme("https://…")   // null
 ```
 
 `reading.declined()` hands back the quotes the dialect turned down, one entry per
-quote with the marker it carried: a map whose coordinates did not read, and a marker
-standing inside another quote, which opens nothing whether the dialect made a callout
-of that outer quote or left it alone. Deciding that from outside would mean writing
-the dialect's rule for what opens a construct a second time.
+quote with the marker it carried: a map whose coordinates did not read, a callout
+marker inside any other quote, and a map marker inside an ordinary one. A map marker
+inside a callout is not turned down, because that is where the dialect still looks.
+Deciding any of this from outside would mean writing the dialect's rule for what
+opens a construct a second time.
 
 A `Reading` is built on one source string and answers by position in it, so it must
 be the string its document was parsed from.
@@ -178,6 +181,7 @@ make test-build    # compile the library and its tests
 make test          # the corpus, the rules tests, and the host-side answers
 make build         # everything, including the jar
 make format        # ktlint, writing its fixes back
+make comments      # commentcensor on its own
 make lint          # commentcensor, ktlint and detekt
 make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 ```

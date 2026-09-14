@@ -2,6 +2,7 @@ package org.wikilayer.wlmarkdown
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import java.io.File
@@ -11,12 +12,13 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
+@Tag("reaches-the-leading-port")
 class CorpusIsCurrentTests {
     @TestFactory
     fun `every file copied from the leading port is still the one it holds`(): List<DynamicTest> =
         COPIED.map { path ->
             DynamicTest.dynamicTest(path) {
-                val copy = File(path)
+                val copy = File(repository, path)
                 assertThat(copy).describedAs("$path is missing; run make sync-corpus").exists()
                 assertThat(copy.readBytes())
                     .describedAs(
@@ -35,6 +37,13 @@ class CorpusIsCurrentTests {
                 "src/test/resources/dialect.yaml",
             )
     }
+
+    private val repository: File =
+        File(
+            requireNotNull(System.getProperty("wlmarkdown.repository")) {
+                "nobody said where the checkout is, so these tests cannot find the shared files"
+            },
+        )
 
     private fun leading(name: String): ByteArray {
         val answer =
