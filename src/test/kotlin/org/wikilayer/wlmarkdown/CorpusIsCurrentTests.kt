@@ -31,11 +31,29 @@ class CorpusIsCurrentTests {
     @Test
     fun `the list names every file sync-corpus copies, so none is checked by accident`() {
         assertThat(COPIED)
-            .describedAs("sync-corpus copies the rules to the library and the cases to the tests")
-            .containsExactlyInAnyOrder(
-                "src/main/resources/rules.yaml",
-                "src/test/resources/dialect.yaml",
-            )
+            .describedAs("a file sync-corpus copies and this list does not name goes unchecked")
+            .containsExactlyInAnyOrderElementsOf(whatSyncCorpusCopies())
+    }
+
+    private fun whatSyncCorpusCopies(): List<String> {
+        val lines = File(repository, "Makefile").readLines()
+        val directories =
+            lines
+                .filter { " = " in it }
+                .associate { it.substringBefore(" = ").trim() to it.substringAfter(" = ").trim() }
+        val copies =
+            lines
+                .dropWhile { !it.startsWith("sync-corpus:") }
+                .drop(1)
+                .takeWhile { it.startsWith("\t") }
+        assertThat(copies).describedAs("sync-corpus copies nothing, so this test reads nothing").isNotEmpty()
+
+        return copies.map { line ->
+            val said = line.trim().split(" ")
+            val file = said[1].substringAfterLast('/')
+            val into = said[2].removePrefix("\$(").substringBefore(")")
+            "${directories.getValue(into)}/$file"
+        }
     }
 
     private val repository: File =

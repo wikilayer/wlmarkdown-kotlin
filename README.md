@@ -87,17 +87,24 @@ A host that builds its own tree holds a `BlockQuote` and needs to know what it i
 
 ```kotlin
 import org.commonmark.node.BlockQuote
+import org.commonmark.node.Node
 import org.wikilayer.wlmarkdown.Reading
 import org.wikilayer.wlmarkdown.children
 
+fun quotesIn(node: Node): List<BlockQuote> =
+    node.children().flatMap { listOfNotNull(it as? BlockQuote) + quotesIn(it) }
+
 val markdown = "…the text your own store holds…"
 val reading = Reading(markdown)
-for (quote in reading.document.children().filterIsInstance<BlockQuote>()) {
+for (quote in quotesIn(reading.document)) {
     reading.place(quote)?.let { }         // lat, lng, caption
     reading.unreadable(quote)?.let { }    // a point nowhere on Earth
     reading.calloutClass(quote)?.let { }  // note, tip, warning …
 }
 ```
+
+The walk goes all the way down rather than over the document's own children: a map
+lives inside a callout often enough, and a loop over the top level would pass it by.
 
 `children()` is an extension this library declares on commonmark's `Node`, so it is
 imported from `org.wikilayer.wlmarkdown` rather than found on the node itself.
@@ -123,8 +130,9 @@ Dialect().scheme("page:home")   // "page"
 Dialect().scheme("https://…")   // null
 ```
 
-`reading.declined()` hands back the quotes the dialect turned down, one entry per
-quote with the marker it carried: a map whose coordinates did not read, a callout
+`reading.declined()` hands back a `Declined` per quote the dialect turned down,
+carrying the marker that quote opened on and nothing else: a map whose coordinates
+did not read, a callout
 marker inside any other quote, and a map marker inside an ordinary one. A map marker
 inside a callout is not turned down, because that is where the dialect still looks.
 Deciding any of this from outside would mean writing the dialect's rule for what
@@ -147,12 +155,14 @@ come from the leading port and are refreshed with `make sync-corpus`, which read
 them from a clone of [wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the
 directory next to this one.
 
-The whole corpus runs here on every build, so a case answered differently by two
-ports goes red rather than reaching a reader. The tests also ask the leading port
-for each of those two files and compare them byte for byte, because a copy nobody
-refreshed leaves this port answering an older dialect with every test still green.
-That check needs the network, and without it `make test` fails rather than passing
-quietly.
+The whole corpus runs here whenever anything it depends on has moved, so a case
+answered differently by two ports goes red rather than reaching a reader. The tests
+also ask the leading port for each of those two files and compare them byte for
+byte, because a copy nobody refreshed leaves this port answering an older dialect
+with every test still green. Nothing in the checkout changes when that corpus moves,
+so this one check runs on every invocation rather than when Gradle thinks it is
+stale. It needs the network, and without it `make test` and `make build` fail rather
+than passing quietly.
 
 ## Where the ports differ
 
@@ -178,14 +188,15 @@ a node of its own.
 
 ```sh
 make test-build    # compile the library and its tests
-make test          # the corpus, the rules tests, and the host-side answers
-make build         # everything, including the jar
+make test          # the corpus, the rules, the host-side answers, and the freshness check
+make build         # everything, including the jar and the freshness check
 make format        # ktlint, writing its fixes back
 make comments      # commentcensor on its own
 make lint          # commentcensor, ktlint and detekt
 make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 ```
 
-`make test` reaches the network, as the section above says. `commentcensor` is ours
+`make test` and `make build` reach the network, as the section above says.
+`commentcensor` is ours
 and lives outside this repository, so `make lint` is ours too; `./gradlew ktlintCheck
 detekt` is the part of it anyone can run, and it is what CI runs.
