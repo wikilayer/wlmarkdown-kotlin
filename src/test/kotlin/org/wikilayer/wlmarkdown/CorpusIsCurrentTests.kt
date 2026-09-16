@@ -91,6 +91,7 @@ class CorpusIsCurrentTests {
             listOf(
                 "src/main/resources/rules.yaml",
                 "src/test/resources/dialect.yaml",
+                "src/test/resources/plain_text.yaml",
             )
         const val LEADING_PORT = "https://raw.githubusercontent.com/wikilayer/wlmarkdown/main/corpus/"
         const val SECONDS_BEFORE_GIVING_UP = 20L

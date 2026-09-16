@@ -41,6 +41,14 @@ only what changed between versions and what that asks of you.
 Changes are documented here in the format of
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.7.0] - 2026-09-16
+
+### Added
+
+- `Dialect.plainText(source)` turns markdown into reader-visible text for search,
+  previews and indexing, following the shared `plain_text.yaml` corpus.
+- A generated Dokka API reference, published through GitHub Pages.
+
 ## [v0.6.0] - 2026-09-14
 
 ### Added
@@ -63,4 +71,5 @@ Changes are documented here in the format of
 - commonmark and kotlinx-serialization-core are exported rather than hidden: a host
   holds commonmark nodes to ask about, and `Found` is `@Serializable`.
 
+[v0.7.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.7.0
 [v0.6.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.6.0

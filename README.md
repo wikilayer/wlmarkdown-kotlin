@@ -1,5 +1,8 @@
 # wlmarkdown-kotlin
 
+[![Tests](https://github.com/wikilayer/wlmarkdown-kotlin/actions/workflows/tests.yml/badge.svg)](https://github.com/wikilayer/wlmarkdown-kotlin/actions/workflows/tests.yml)
+[![Documentation](https://github.com/wikilayer/wlmarkdown-kotlin/actions/workflows/documentation.yml/badge.svg)](https://wikilayer.github.io/wlmarkdown-kotlin/)
+
 The WikiLayer markdown dialect in Kotlin: GitHub-flavoured markdown, and then the
 constructs the dialect adds of its own. It is a port of
 [wlmarkdown](https://github.com/wikilayer/wlmarkdown), the Go library that leads,
@@ -9,7 +12,9 @@ and it answers the same corpus of cases that one and
 ```kotlin
 import org.wikilayer.wlmarkdown.Dialect
 
-val found = Dialect().recognise("> [!TIP]\n> Try the shorter form.\n")
+val dialect = Dialect()
+val found = dialect.recognise("> [!TIP]\n> Try the shorter form.\n")
+val plain = dialect.plainText("Read **this** before `make test`.")
 ```
 
 `Found` comes back flat and in document order, one entry per construct, and `kind`
@@ -36,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.6.0")
+    implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.7.0")
 }
 ```
 
@@ -148,10 +153,16 @@ It recognises. A title for a callout, an icon, a colour, a link resolved against
 store: each of those belongs to whoever holds the pages, because a web page answers
 them one way and a phone app another.
 
+## Documentation
+
+The [Dokka API reference](https://wikilayer.github.io/wlmarkdown-kotlin/) is
+generated from the public Kotlin API and deployed by GitHub Actions.
+
 ## The corpus
 
 `src/main/resources/rules.yaml` holds what the dialect knows and
-`src/test/resources/dialect.yaml` the cases that define it, one copy of each. Both
+`src/test/resources/dialect.yaml` the cases that define constructs, and
+`src/test/resources/plain_text.yaml` the portable answers for `plainText`. All three
 come from the leading port and are refreshed with `make sync-corpus`, which reads
 them from a clone of [wlmarkdown](https://github.com/wikilayer/wlmarkdown) in the
 directory next to this one. Pull that clone first: the target copies whatever it
@@ -160,7 +171,7 @@ neighbour keeps the run red however often the target is run.
 
 The whole corpus runs here whenever anything it depends on has moved, so a case
 answered differently by two ports goes red rather than reaching a reader. The tests
-also ask the leading port for each of those two files and compare them byte for
+also ask the leading port for each copied file and compare them byte for
 byte, because a copy nobody refreshed leaves this port answering an older dialect
 with every test still green. Nothing in the checkout changes when that corpus moves,
 so this one check runs on every invocation rather than when Gradle thinks it is
@@ -196,6 +207,7 @@ make build         # everything, including the jar and the freshness check
 make format        # ktlint, writing its fixes back
 make comments      # commentcensor on its own
 make lint          # commentcensor, ktlint and detekt
+make docs          # generate the Dokka API reference
 make sync-corpus   # refresh rules.yaml and dialect.yaml from the leading port
 ```
 

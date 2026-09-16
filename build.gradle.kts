@@ -5,6 +5,7 @@ plugins {
     `maven-publish`
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.dokka") version "2.2.0"
 }
 
 // JitPack builds this repository under com.github.wikilayer at the name of the tag,
@@ -12,7 +13,7 @@ plugins {
 // asked for. So the group is the one JitPack serves, and the version is whatever it
 // passes in, falling back to the tag this branch is heading for.
 group = "com.github.wikilayer"
-if (version == Project.DEFAULT_VERSION) version = "v0.6.0"
+if (version == Project.DEFAULT_VERSION) version = "v0.7.0"
 
 // The tests read the shared files where they lie rather than off the classpath,
 // so they are told where the checkout is instead of guessing at a working directory.
@@ -71,10 +72,25 @@ kotlin {
     jvmToolchain(17)
 }
 
-// No javadoc jar: nothing here builds documentation, and an empty one published
-// beside the sources would only promise a reference that does not exist.
 java {
     withSourcesJar()
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("WLMarkdown for Kotlin")
+        moduleVersion.set(project.version.toString())
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+        includes.from("docs/module.md")
+    }
+    dokkaSourceSets.configureEach {
+        sourceRoots.from(file("src/main/kotlin"))
+        sourceLink {
+            localDirectory.set(file("src/main/kotlin"))
+            remoteUrl.set(uri("https://github.com/wikilayer/wlmarkdown-kotlin/tree/main/src/main/kotlin"))
+            remoteLineSuffix.set("#L")
+        }
+    }
 }
 
 publishing {

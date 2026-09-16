@@ -1,5 +1,6 @@
 package org.wikilayer.wlmarkdown
 
+import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.ext.gfm.tables.TableBody
 import org.commonmark.ext.gfm.tables.TableCell
 import org.commonmark.ext.gfm.tables.TableHead
@@ -40,8 +41,8 @@ internal fun Dialect.words(
         else -> spaced(node, outside)
     }
 
-private fun Node.standsBesideItsNeighbours(): Boolean =
-    this is TableHead || this is TableBody || this is TableRow || this is TableCell
+internal fun Node.standsBesideItsNeighbours(): Boolean =
+    this is TableBlock || this is TableHead || this is TableBody || this is TableRow || this is TableCell
 
 private fun Dialect.spaced(
     node: Node,
