@@ -22,5 +22,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      - name: Install tools
+        run: make install-tools
+
       - name: Build
         run: make build
