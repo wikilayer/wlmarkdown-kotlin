@@ -10,6 +10,7 @@ import org.commonmark.node.Node
 import org.commonmark.node.SoftLineBreak
 import org.commonmark.node.Text
 
+/** Returns the reader-visible words in a markdown document. */
 fun Dialect.plainText(source: String): String {
     val reading = Reading(source, this)
     return squeezed(plainWords(reading.document, reading))
