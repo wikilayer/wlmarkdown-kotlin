@@ -1,10 +1,14 @@
 CORPUS = ../wlmarkdown/corpus
 RULES = src/main/resources
 CASES = src/test/resources
+COMMENTCENSOR_VERSION ?= v0.3.0
 
 .DEFAULT_GOAL := build
 
-.PHONY: format lint comments test-build test docs build sync-corpus
+.PHONY: install-tools format lint comments test-build test docs build sync-corpus
+
+install-tools:
+	python3 -m pip install --quiet git+https://github.com/botforge-pro/commentcensor.git@$(COMMENTCENSOR_VERSION)
 
 format:
 	./gradlew ktlintFormat
