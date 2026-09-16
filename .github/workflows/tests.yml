@@ -20,7 +20,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Install tools
+        run: make install-tools
 
       - name: Build
         run: make build
