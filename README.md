@@ -109,10 +109,6 @@ Releases are published by the repository's
 [Release workflow](https://github.com/wikilayer/wlmarkdown-kotlin/actions/workflows/release.yml),
 after it repeats the complete build.
 
-## License
-
-MIT. See [LICENSE](LICENSE).
-
 ## Lines of Code
 
 <picture>
