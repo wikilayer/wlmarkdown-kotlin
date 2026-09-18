@@ -13,7 +13,7 @@ plugins {
 // asked for. So the group is the one JitPack serves, and the version is whatever it
 // passes in, falling back to the tag this branch is heading for.
 group = "com.github.wikilayer"
-if (version == Project.DEFAULT_VERSION) version = "v0.7.0"
+if (version == Project.DEFAULT_VERSION) version = "v0.7.1"
 
 // The tests read the shared files where they lie rather than off the classpath,
 // so they are told where the checkout is instead of guessing at a working directory.
@@ -50,19 +50,20 @@ tasks.test {
     systemProperty(repositoryProperty, projectDir.absolutePath)
 }
 
-val corpusIsCurrent by tasks.registering(Test::class) {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Asks the leading port whether this copy of the corpus is still its corpus."
-    testClassesDirs =
-        sourceSets.test
-            .get()
-            .output.classesDirs
-    classpath = sourceSets.test.get().runtimeClasspath
-    useJUnitPlatform { includeTags(reachesTheLeadingPort) }
-    systemProperty(repositoryProperty, projectDir.absolutePath)
-    outputs.upToDateWhen { false }
-    outputs.cacheIf { false }
-}
+val corpusIsCurrent =
+    tasks.register<Test>("corpusIsCurrent") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Asks the leading port whether this copy of the corpus is still its corpus."
+        testClassesDirs =
+            sourceSets.test
+                .get()
+                .output.classesDirs
+        classpath = sourceSets.test.get().runtimeClasspath
+        useJUnitPlatform { includeTags(reachesTheLeadingPort) }
+        systemProperty(repositoryProperty, projectDir.absolutePath)
+        outputs.upToDateWhen { false }
+        outputs.cacheIf { false }
+    }
 
 tasks.check {
     dependsOn(corpusIsCurrent)

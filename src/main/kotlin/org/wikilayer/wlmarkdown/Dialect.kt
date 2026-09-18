@@ -28,25 +28,32 @@ internal data class Rules(
     @SerialName("ref_schemes") val refSchemes: List<String>,
 )
 
+/** The rules and readers of the WikiLayer markdown dialect. */
 class Dialect {
     internal val rules: Rules = written
 
+    /** Every marker that can open a dialect construct, in sorted order. */
     val markers: List<String>
         get() = (rules.calloutClassByMarker.keys + rules.mapMarker).sorted()
 
+    /** Every callout class the dialect can report, in sorted order. */
     val classes: List<String>
         get() =
             rules.calloutClassByMarker.values
                 .distinct()
                 .sorted()
 
+    /** Every node-reference scheme the dialect can report, in sorted order. */
     val schemes: List<String>
         get() = rules.refSchemes.sorted()
 
+    /** Creates a commonmark parser with the extensions and source spans the dialect requires. */
     fun parser(): Parser = built
 
+    /** Returns dialect constructs in document order. */
     fun recognise(source: String): List<Found> = Reading(source, this).recognise()
 
+    /** Returns the dialect scheme at the start of a destination, when present. */
     fun scheme(destination: String): String? = schemeIn(destination).ifEmpty { null }
 
     internal fun schemeIn(destination: String): String =

@@ -18,4 +18,5 @@ internal class Scan(
         link.sourceSpans.firstOrNull()?.let { source.startsWith("[", it.inputIndex) } ?: false
 }
 
+/** Returns the node's direct children in document order. */
 fun Node.children(): List<Node> = generateSequence(firstChild) { it.next }.toList()
