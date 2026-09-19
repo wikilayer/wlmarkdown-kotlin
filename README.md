@@ -97,13 +97,13 @@ generated and published by GitHub Actions.
 ## Development
 
 ```sh
-make test-build    # compile the library and tests
-make test          # run tests and verify the shared corpus
-make lint          # commentcensor, ktlint, and detekt
-make docs          # generate the Dokka API reference
-make build         # all checks and the jar
-make sync-corpus   # refresh rules.yaml and both corpora
+make build
+make sync-corpus
 ```
+
+`build` runs commentcensor, ktlint, detekt, compilation, tests, corpus
+verification, Dokka, and the final jar. `sync-corpus` refreshes the shared rules
+and cases from the leading Go repository.
 
 Releases are published by the repository's
 [Release workflow](https://github.com/wikilayer/wlmarkdown-kotlin/actions/workflows/release.yml),
