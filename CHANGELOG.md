@@ -8,6 +8,15 @@ corpora; matching major and minor versions promise agreement on those cases.
 The package remains below 1.0 while its public API is settling. The README carries
 installation and usage examples, and the generated reference carries signatures.
 
+## [v0.8.1] - 2026-09-22
+
+### Changed
+
+- Nothing in the library: v0.8.0 is the same code. The build that publishes it could
+  not reach Maven Central for the Kotlin plugin, and a failed build is remembered per
+  tag, so this version carries v0.8.0's changes to anyone depending on it. Take this
+  one instead of v0.8.0; drop-in.
+
 ## [v0.8.0] - 2026-09-22
 
 ### Changed
