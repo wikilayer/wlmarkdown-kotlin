@@ -25,6 +25,7 @@ internal data class Rules(
     @SerialName("map_marker") val mapMarker: String,
     val coordinate: Coordinate,
     val blanks: String,
+    val marks: String,
     @SerialName("ref_schemes") val refSchemes: List<String>,
 )
 

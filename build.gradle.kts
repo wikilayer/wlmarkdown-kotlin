@@ -13,7 +13,7 @@ plugins {
 // asked for. So the group is the one JitPack serves, and the version is whatever it
 // passes in, falling back to the tag this branch is heading for.
 group = "com.github.wikilayer"
-if (version == Project.DEFAULT_VERSION) version = "v0.7.1"
+if (version == Project.DEFAULT_VERSION) version = "v0.8.0"
 
 // The tests read the shared files where they lie rather than off the classpath,
 // so they are told where the checkout is instead of guessing at a working directory.

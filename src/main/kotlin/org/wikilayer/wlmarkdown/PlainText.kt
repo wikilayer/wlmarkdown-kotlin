@@ -12,8 +12,18 @@ import org.commonmark.node.Text
 
 /** Returns the reader-visible words in a markdown document. */
 fun Dialect.plainText(source: String): String {
+    if (!saysSomethingInMarkdown(source)) return squeezed(source)
     val reading = Reading(source, this)
     return squeezed(plainWords(reading.document, reading))
+}
+
+private fun Dialect.saysSomethingInMarkdown(source: String): Boolean = carriesAMark(source) || opensOnADigit(source)
+
+private fun Dialect.carriesAMark(source: String): Boolean = source.any { it in rules.marks }
+
+private fun Dialect.opensOnADigit(source: String): Boolean {
+    val opening = source.dropWhile { it in rules.blanks }.firstOrNull() ?: return false
+    return opening in rules.coordinate.digits
 }
 
 private fun Dialect.plainWords(
