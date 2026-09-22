@@ -25,8 +25,8 @@ installation and usage examples, and the generated reference carries signatures.
   longer parses a source that says nothing in markdown. The rules gained `marks`,
   the characters that can open a construct wherever they stand: a source carrying
   none of them, and not opening on a digit, which would number a list, is its own
-  plain text. Measured on a device: the hundred and twenty-six titles of one wiki's
-  page tree cost 350ms of parsing, and now cost none.
+  plain text. A caller stripping many short strings, most of which carry no markup,
+  now reaches the parser only for the ones that do.
 - The rules and the plain-text corpus were copied again from
   [the leading port](https://github.com/wikilayer/wlmarkdown), which adds the cases
   that hold the rule honest: a numbered or dashed line is still a list, an indented
@@ -72,6 +72,8 @@ installation and usage examples, and the generated reference carries signatures.
 - commonmark and kotlinx-serialization-core are exported rather than hidden: a host
   holds commonmark nodes to ask about, and `Found` is `@Serializable`.
 
+[v0.8.1]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.8.1
+[v0.8.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.8.0
 [v0.7.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.7.0
 [v0.7.1]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.7.1
 [v0.6.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.6.0
