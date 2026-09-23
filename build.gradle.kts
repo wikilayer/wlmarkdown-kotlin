@@ -32,7 +32,7 @@ dependencies {
     // Found is @Serializable, so whoever holds one needs the annotations on their
     // own compile classpath rather than only on ours.
     api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0")
-    implementation("io.heapy.kotaml:kotaml:0.110.0")
+    implementation("io.heapy.kotaml:kotaml:0.111.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
