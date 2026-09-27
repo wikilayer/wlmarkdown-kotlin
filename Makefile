@@ -7,7 +7,7 @@ COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format lint comments test-build test docs build publish publish-local publish-check sync-corpus
+.PHONY: install-tools format lint comments test-build test test-offline docs build publish publish-local publish-check sync-corpus
 
 install-tools:
 	python3 -m venv $(COMMENTCENSOR_ENV)
@@ -27,6 +27,9 @@ test-build:
 
 test:
 	./gradlew test corpusIsCurrent
+
+test-offline:
+	./gradlew test
 
 docs:
 	./gradlew dokkaGeneratePublicationHtml
