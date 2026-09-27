@@ -8,6 +8,22 @@ corpora; matching major and minor versions promise agreement on those cases.
 The package remains below 1.0 while its public API is settling. The README carries
 installation and usage examples, and the generated reference carries signatures.
 
+## [v0.8.2] - 2026-09-27
+
+### Changed
+
+- The library moves from JitPack to Maven Central, under new coordinates. The code
+  is the same as v0.8.1. Drop the JitPack repository and change the dependency:
+
+  ```kotlin
+  // before
+  implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.8.1")
+  // after
+  implementation("org.wikilayer:wlmarkdown-kotlin:0.8.2")
+  ```
+
+  Versions up to v0.8.1 stay on JitPack; new ones go to Maven Central only.
+
 ## [v0.8.1] - 2026-09-22
 
 ### Changed

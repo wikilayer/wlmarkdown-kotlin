@@ -1,19 +1,18 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinJvm
+import com.vanniktech.maven.publish.SourcesJar
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     `java-library`
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.37.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("org.jetbrains.dokka") version "2.2.0"
 }
 
-// JitPack builds this repository under com.github.wikilayer at the name of the tag,
-// and Gradle refuses a module whose POM carries other coordinates than the ones it
-// asked for. So the group is the one JitPack serves, and the version is whatever it
-// passes in, falling back to the tag this branch is heading for.
-group = "com.github.wikilayer"
-if (version == Project.DEFAULT_VERSION) version = "v0.8.1"
+group = "org.wikilayer"
 
 // The tests read the shared files where they lie rather than off the classpath,
 // so they are told where the checkout is instead of guessing at a working directory.
@@ -73,10 +72,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-java {
-    withSourcesJar()
-}
-
 dokka {
     dokkaPublications.html {
         moduleName.set("WLMarkdown for Kotlin")
@@ -94,10 +89,39 @@ dokka {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
+mavenPublishing {
+    configure(
+        KotlinJvm(
+            javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"),
+            sourcesJar = SourcesJar.Sources(),
+        ),
+    )
+    publishToMavenCentral()
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+    coordinates("org.wikilayer", "wlmarkdown-kotlin", version.toString())
+    pom {
+        name.set("WLMarkdown for Kotlin")
+        description.set("Recognises Wikilayer's markdown dialect and extracts reader-visible text.")
+        url.set("https://github.com/wikilayer/wlmarkdown-kotlin")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+            }
+        }
+        developers {
+            developer {
+                id.set("wikilayer")
+                name.set("Wikilayer")
+                url.set("https://github.com/wikilayer")
+            }
+        }
+        scm {
+            url.set("https://github.com/wikilayer/wlmarkdown-kotlin")
+            connection.set("scm:git:https://github.com/wikilayer/wlmarkdown-kotlin.git")
+            developerConnection.set("scm:git:ssh://git@github.com/wikilayer/wlmarkdown-kotlin.git")
         }
     }
 }

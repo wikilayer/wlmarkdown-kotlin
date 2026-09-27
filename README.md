@@ -9,16 +9,15 @@ callouts, map embeds, and `page:` and `block:` links on top of
 [wlmarkdown](https://github.com/wikilayer/wlmarkdown) leads the shared rules and
 test corpora.
 
-The library targets JDK 17 and is published through JitPack:
+The library targets JDK 17 and is published to Maven Central:
 
 ```kotlin
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("com.github.wikilayer:wlmarkdown-kotlin:v0.7.1")
+    implementation("org.wikilayer:wlmarkdown-kotlin:0.8.2")
 }
 ```
 

@@ -7,7 +7,7 @@ COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format lint comments test-build test docs build sync-corpus
+.PHONY: install-tools format lint comments test-build test docs build publish publish-local sync-corpus
 
 install-tools:
 	python3 -m venv $(COMMENTCENSOR_ENV)
@@ -33,6 +33,14 @@ docs:
 
 build: lint test-build test docs
 	./gradlew build
+
+publish:
+	@test -n "$(VERSION)" || { echo "usage: make publish VERSION=0.8.2" >&2; exit 1; }
+	./gradlew publishAndReleaseToMavenCentral -Pversion=$(VERSION)
+
+publish-local:
+	@test -n "$(VERSION)" || { echo "usage: make publish-local VERSION=0.8.2" >&2; exit 1; }
+	./gradlew publishToMavenLocal -Pversion=$(VERSION)
 
 sync-corpus:
 	cp $(CORPUS)/rules.yaml $(RULES)/
