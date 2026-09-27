@@ -123,9 +123,14 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          if curl --silent --fail --head "$POM_URL" > /dev/null; then
+          STATUS="$(curl --silent --head --output /dev/null --write-out '%{http_code}' "$POM_URL")"
+          if [[ "$STATUS" == "200" ]]; then
             echo "$VERSION is already on Maven Central"
             exit 0
+          fi
+          if [[ "$STATUS" != "404" ]]; then
+            echo "repo1 answered $STATUS for $POM_URL, cannot tell whether $VERSION is published" >&2
+            exit 1
           fi
           if ! make publish; then
             echo "if Central reports $VERSION as a duplicate, the earlier upload has not reached repo1 yet: re-run in half an hour" >&2
