@@ -1,17 +1,17 @@
 CORPUS = ../wlmarkdown/corpus
 RULES = src/main/resources
 CASES = src/test/resources
-COMMENTCENSOR_VERSION ?= v0.3.2
+COMMENTCENSOR_REF ?= 48d702a6ba4ace9af0bf996fad2fff9a012f25f9
 COMMENTCENSOR_ENV = build/commentcensor
 COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format lint comments test-build test test-offline docs build publish publish-local publish-check sync-corpus
+.PHONY: install-tools format lint comments test-build test docs build publish publish-local publish-check sync-corpus
 
 install-tools:
 	python3 -m venv $(COMMENTCENSOR_ENV)
-	$(COMMENTCENSOR_ENV)/bin/pip install --quiet --upgrade git+https://github.com/botforge-pro/commentcensor.git@$(COMMENTCENSOR_VERSION)
+	$(COMMENTCENSOR_ENV)/bin/pip install --quiet --upgrade git+https://github.com/botforge-pro/commentcensor.git@$(COMMENTCENSOR_REF)
 
 format:
 	./gradlew ktlintFormat
@@ -28,14 +28,11 @@ test-build:
 test:
 	./gradlew test corpusIsCurrent
 
-test-offline:
-	./gradlew test
-
 docs:
 	./gradlew dokkaGeneratePublicationHtml
 
 build: lint test-build test docs
-	./gradlew build
+	./gradlew assemble
 
 publish:
 	@test -n "$(CI)" || { echo "publish runs in the release workflow, not locally" >&2; exit 1; }
