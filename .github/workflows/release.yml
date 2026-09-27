@@ -9,22 +9,26 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  VERSION: ${{ inputs.version }}
+  TAG: v${{ inputs.version }}
+
 jobs:
-  release:
+  check:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ inputs.version }}
-      TAG: v${{ inputs.version }}
-      POM_URL: https://repo1.maven.org/maven2/org/wikilayer/wlmarkdown-kotlin/${{ inputs.version }}/wlmarkdown-kotlin-${{ inputs.version }}.pom
-      GH_TOKEN: ${{ github.token }}
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Check version
         run: |
           if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
@@ -40,9 +44,23 @@ jobs:
             echo "version must match the latest CHANGELOG entry: $CHANGELOG_VERSION" >&2
             exit 1
           fi
-          TAGGED="$(git ls-remote --tags origin "refs/tags/$TAG" | cut -f1)"
+          NOTES="$(sed -n "/^## \[v${VERSION}\]/,/^## \[/p" CHANGELOG.md | sed '1d;/^## \[/d')"
+          if [[ -z "${NOTES//[[:space:]]/}" ]]; then
+            echo "the CHANGELOG entry for $VERSION is empty" >&2
+            exit 1
+          fi
+          TAGGED="$(git ls-remote --tags origin "refs/tags/$TAG^{}" "refs/tags/$TAG" | sort -k2 -r | head -1 | cut -f1)"
           if [[ -n "$TAGGED" && "$TAGGED" != "$GITHUB_SHA" ]]; then
             echo "$TAG already names commit $TAGGED, not $GITHUB_SHA" >&2
+            exit 1
+          fi
+      - name: Require passing tests for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PASSED="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/tests.yml/runs?head_sha=$GITHUB_SHA&status=success" --jq '.total_count')"
+          if [[ "$PASSED" == "0" ]]; then
+            echo "tests.yml has not passed for $GITHUB_SHA" >&2
             exit 1
           fi
       - uses: actions/setup-java@v6
@@ -50,16 +68,35 @@ jobs:
           java-version: "17"
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v6
-      - name: Install tools
-        run: make install-tools
-      - name: Build
-        run: make build
+      - name: Build the signed publication locally
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: make publish-check
+
+  release:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      POM_URL: https://repo1.maven.org/maven2/org/wikilayer/wlmarkdown-kotlin/${{ inputs.version }}/wlmarkdown-kotlin-${{ inputs.version }}.pom
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [[ -z "$(git ls-remote --tags origin "refs/tags/$TAG")" ]]; then
-            git tag "$TAG" "$GITHUB_SHA"
-            git push origin "refs/tags/$TAG"
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" > /dev/null
           fi
+      - uses: actions/setup-java@v6
+        with:
+          java-version: "17"
+          distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
       - name: Publish to Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -76,10 +113,12 @@ jobs:
             exit 1
           fi
       - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "$TAG is already released"
             exit 0
           fi
-          NOTES="$(sed -n "/^## \[v${VERSION}\] /,/^## /p" CHANGELOG.md | sed '1d;$d')"
+          NOTES="$(sed -n "/^## \[v${VERSION}\]/,/^## \[/p" CHANGELOG.md | sed '1d;/^## \[/d')"
           gh release create "$TAG" --verify-tag --title "$TAG" --notes "$NOTES"

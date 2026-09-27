@@ -7,7 +7,7 @@ COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format lint comments test-build test docs build publish publish-local sync-corpus
+.PHONY: install-tools format lint comments test-build test docs build publish publish-local publish-check sync-corpus
 
 install-tools:
 	python3 -m venv $(COMMENTCENSOR_ENV)
@@ -40,6 +40,9 @@ publish:
 
 publish-local:
 	./gradlew publishToMavenLocal -PunsignedLocalPublish
+
+publish-check:
+	./gradlew publishToMavenLocal
 
 sync-corpus:
 	cp $(CORPUS)/rules.yaml $(RULES)/

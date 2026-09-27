@@ -89,6 +89,7 @@ installation and usage examples, and the generated reference carries signatures.
 - commonmark and kotlinx-serialization-core are exported rather than hidden: a host
   holds commonmark nodes to ask about, and `Found` is `@Serializable`.
 
+[v0.8.2]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.8.2
 [v0.8.1]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.8.1
 [v0.8.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.8.0
 [v0.7.0]: https://github.com/wikilayer/wlmarkdown-kotlin/releases/tag/v0.7.0
