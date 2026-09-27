@@ -59,7 +59,11 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           if curl --silent --fail --head "$POM_URL" > /dev/null; then
-            echo "$VERSION is already on Maven Central, going straight to the tag"
+            if [[ "$GITHUB_RUN_ATTEMPT" == "1" ]]; then
+              echo "$VERSION is already on Maven Central from another run: re-run that run, which keeps the commit it uploaded" >&2
+              exit 1
+            fi
+            echo "$VERSION is already on Maven Central from this run, going straight to the tag"
             exit 0
           fi
           if ! make publish; then
