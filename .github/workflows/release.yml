@@ -20,7 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ inputs.version }}
+      TAG: v${{ inputs.version }}
       POM_URL: https://repo1.maven.org/maven2/org/wikilayer/wlmarkdown-kotlin/${{ inputs.version }}/wlmarkdown-kotlin-${{ inputs.version }}.pom
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
       - name: Check version
@@ -38,8 +40,9 @@ jobs:
             echo "version must match the latest CHANGELOG entry: $CHANGELOG_VERSION" >&2
             exit 1
           fi
-          if [[ -n "$(git ls-remote --tags origin "refs/tags/v$VERSION")" ]]; then
-            echo "tag v$VERSION already exists" >&2
+          TAGGED="$(git ls-remote --tags origin "refs/tags/$TAG" | cut -f1)"
+          if [[ -n "$TAGGED" && "$TAGGED" != "$GITHUB_SHA" ]]; then
+            echo "$TAG already names commit $TAGGED, not $GITHUB_SHA" >&2
             exit 1
           fi
       - uses: actions/setup-java@v6
@@ -51,6 +54,12 @@ jobs:
         run: make install-tools
       - name: Build
         run: make build
+      - name: Tag
+        run: |
+          if [[ -z "$(git ls-remote --tags origin "refs/tags/$TAG")" ]]; then
+            git tag "$TAG" "$GITHUB_SHA"
+            git push origin "refs/tags/$TAG"
+          fi
       - name: Publish to Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -59,11 +68,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           if curl --silent --fail --head "$POM_URL" > /dev/null; then
-            if [[ "$GITHUB_RUN_ATTEMPT" == "1" ]]; then
-              echo "$VERSION is already on Maven Central from another run: re-run that run, which keeps the commit it uploaded" >&2
-              exit 1
-            fi
-            echo "$VERSION is already on Maven Central from this run, going straight to the tag"
+            echo "$VERSION is already on Maven Central"
             exit 0
           fi
           if ! make publish; then
@@ -71,8 +76,10 @@ jobs:
             exit 1
           fi
       - name: Publish GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "$TAG is already released"
+            exit 0
+          fi
           NOTES="$(sed -n "/^## \[v${VERSION}\] /,/^## /p" CHANGELOG.md | sed '1d;$d')"
-          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --notes "$NOTES"
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes "$NOTES"
