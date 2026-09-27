@@ -12,9 +12,9 @@ installation and usage examples, and the generated reference carries signatures.
 
 ### Changed
 
-- The library moves from JitPack to Maven Central, under new coordinates. The code
-  is the same as v0.8.1. Change the dependency, and drop the JitPack repository if
-  nothing else comes from it:
+- The library moves from JitPack to Maven Central, under new coordinates. Its own
+  code is the same as v0.8.1. Change the dependency, and drop the JitPack repository
+  if nothing else comes from it:
 
   ```kotlin
   // before
@@ -24,6 +24,9 @@ installation and usage examples, and the generated reference carries signatures.
   ```
 
   Versions up to v0.8.1 stay on JitPack; new ones go to Maven Central only.
+
+- The YAML reader it uses at runtime, `io.heapy.kotaml:kotaml`, moves from 0.110.0
+  to 0.111.0.
 
 ## [v0.8.1] - 2026-09-22
 
