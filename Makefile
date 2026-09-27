@@ -35,12 +35,11 @@ build: lint test-build test docs
 	./gradlew build
 
 publish:
-	@test -n "$(VERSION)" || { echo "usage: make publish VERSION=0.8.2" >&2; exit 1; }
-	./gradlew publishAndReleaseToMavenCentral -Pversion=$(VERSION)
+	@test -n "$(CI)" || { echo "publish runs in the release workflow, not locally" >&2; exit 1; }
+	./gradlew publishAndReleaseToMavenCentral
 
 publish-local:
-	@test -n "$(VERSION)" || { echo "usage: make publish-local VERSION=0.8.2" >&2; exit 1; }
-	./gradlew publishToMavenLocal -Pversion=$(VERSION)
+	./gradlew publishToMavenLocal -PunsignedLocalPublish
 
 sync-corpus:
 	cp $(CORPUS)/rules.yaml $(RULES)/

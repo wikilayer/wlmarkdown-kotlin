@@ -13,7 +13,8 @@ installation and usage examples, and the generated reference carries signatures.
 ### Changed
 
 - The library moves from JitPack to Maven Central, under new coordinates. The code
-  is the same as v0.8.1. Drop the JitPack repository and change the dependency:
+  is the same as v0.8.1. Change the dependency, and drop the JitPack repository if
+  nothing else comes from it:
 
   ```kotlin
   // before

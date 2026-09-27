@@ -13,6 +13,11 @@ plugins {
 }
 
 group = "org.wikilayer"
+version =
+    requireNotNull(
+        Regex("""^## \[v(\d+\.\d+\.\d+)]""", RegexOption.MULTILINE)
+            .find(file("CHANGELOG.md").readText()),
+    ) { "CHANGELOG.md has no released version heading" }.groupValues[1]
 
 // The tests read the shared files where they lie rather than off the classpath,
 // so they are told where the checkout is instead of guessing at a working directory.
@@ -97,7 +102,7 @@ mavenPublishing {
         ),
     )
     publishToMavenCentral()
-    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+    if (!providers.gradleProperty("unsignedLocalPublish").isPresent) {
         signAllPublications()
     }
     coordinates("org.wikilayer", "wlmarkdown-kotlin", version.toString())
