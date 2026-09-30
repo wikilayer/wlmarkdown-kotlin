@@ -20,11 +20,11 @@ class CorpusIsCurrentTests {
                 val copy = File(repository, path)
                 assertThat(
                     copy,
-                ).describedAs("$path is missing; pull the clone next door and run make sync-corpus").exists()
+                ).describedAs("$path is missing; run make sync-corpus in wlmarkdown").exists()
                 assertThat(copy.readBytes())
                     .describedAs(
                         "$path is not the file the leading port holds, so this port answers an " +
-                            "older dialect than the others; pull the clone next door and run make sync-corpus",
+                            "older dialect than the others; run make sync-corpus in wlmarkdown",
                     ).isEqualTo(leading(copy.name))
             }
         }
