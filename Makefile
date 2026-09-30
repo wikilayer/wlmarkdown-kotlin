@@ -1,10 +1,6 @@
-CORPUS = ../wlmarkdown/corpus
-RULES = src/main/resources
-CASES = src/test/resources
-
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format lint comments test-build test docs build publish publish-local publish-check sync-corpus
+.PHONY: install-tools format lint comments test-build test docs build publish publish-local publish-check
 
 install-tools:
 	python3 -m pip install --quiet --upgrade git+https://github.com/botforge-pro/commentcensor.git
@@ -39,8 +35,3 @@ publish-local:
 
 publish-check:
 	./gradlew publishToMavenLocal
-
-sync-corpus:
-	cp $(CORPUS)/rules.yaml $(RULES)/
-	cp $(CORPUS)/dialect.yaml $(CASES)/
-	cp $(CORPUS)/plain_text.yaml $(CASES)/
