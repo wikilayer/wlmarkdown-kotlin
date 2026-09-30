@@ -84,7 +84,7 @@ choices belong to the application holding the pages.
 ## The corpus
 
 `rules.yaml`, `dialect.yaml`, and `plain_text.yaml` are copies of the leading Go
-port's rules and corpora. Refresh them with `make sync-corpus`; every build verifies
+port's rules and corpora. Refresh them with `make sync-corpus` in wlmarkdown; every build verifies
 the copies and their answers. The freshness check reaches the leading repository
 and fails rather than accepting an unverifiable copy when the network is absent.
 
@@ -97,11 +97,11 @@ generated and published by GitHub Actions.
 
 ```sh
 make build
-make sync-corpus
+make -C ../wlmarkdown sync-corpus
 ```
 
 `build` runs commentcensor, ktlint, detekt, compilation, tests, corpus
-verification, Dokka, and the final jar. `sync-corpus` refreshes the shared rules
+verification, Dokka, and the final jar. The leading repository's `sync-corpus` refreshes the shared rules
 and cases from the leading Go repository.
 
 Releases are published by the repository's
