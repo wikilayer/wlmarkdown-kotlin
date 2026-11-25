@@ -33,7 +33,7 @@ dependencies {
     api("org.commonmark:commonmark-ext-autolink:0.33.0")
     api("org.commonmark:commonmark-ext-gfm-tables:0.32.0")
     api("org.commonmark:commonmark-ext-gfm-strikethrough:0.32.0")
-    api("org.commonmark:commonmark-ext-task-list-items:0.32.0")
+    api("org.commonmark:commonmark-ext-task-list-items:0.33.0")
     // Found is @Serializable, so whoever holds one needs the annotations on their
     // own compile classpath rather than only on ours.
     api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.12.0")
